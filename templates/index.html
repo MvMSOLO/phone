@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AxtarGet Screen Mirroring V1.4</title>
+    <style>
+        :root {
+            --bg-color: #0d0f12;
+            --panel-bg: #161b22;
+            --accent-color: #00ff66;
+            --accent-glow: rgba(0, 255, 102, 0.4);
+            --text-color: #e6edf3;
+            --text-dim: #8b949e;
+            --border-color: #30363d;
+            --btn-hover: #21262d;
+            --danger-color: #ff4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo {
+            width: 24px;
+            height: 24px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .brand-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--text-color);
+        }
+
+        .brand-title span {
+            color: var(--accent-color);
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            background: rgba(0, 255, 102, 0.1);
+            border: 1px solid var(--accent-color);
+            padding: 4px 12px;
+            border-radius: 20px;
+            color: var(--accent-color);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            gap: 20px;
+            position: relative;
+        }
+
+        .device-container {
+            position: relative;
+            background: #000;
+            border-radius: 24px;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 20px rgba(0,255,102,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-height: calc(100vh - 100px);
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #050505;
+        }
+
+        #screenCanvas {
+            display: block;
+            max-height: calc(100vh - 180px);
+            max-width: 100%;
+            cursor: pointer;
+            object-fit: contain;
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            background-color: var(--panel-bg);
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-color);
+            color: #000;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .btn-icon {
+            font-size: 1.1rem;
+        }
+
+        .side-bar {
+            background: var(--panel-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .panel-section h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-field {
+            flex: 1;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text-color);
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-color);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+        }
+
+        .info-label {
+            color: var(--text-dim);
+        }
+
+        .info-value {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="brand">
+            <div class="brand-logo"></div>
+            <div class="brand-title">AxtarGet <span>Mirroring V1.4</span></div>
+        </div>
+        <div class="status-badge">
+            <div class="status-dot"></div>
+            <span id="connectionStatus">Connecting...</span>
+        </div>
+    </header>
+
+    <main>
+        <div class="device-container">
+            <div class="canvas-wrapper">
+                <canvas id="screenCanvas" width="720" height="1280"></canvas>
+            </div>
+
+            <div class="control-panel">
+                <button class="btn" id="btnBack" title="Back">
+                    <span class="btn-icon">◀</span> Back
+                </button>
+                <button class="btn" id="btnHome" title="Home">
+                    <span class="btn-icon">●</span> Home
+                </button>
+                <button class="btn" id="btnRecents" title="Recents">
+                    <span class="btn-icon">█</span> Recents
+                </button>
+                <button class="btn" id="btnPower" title="Power">
+                    <span class="btn-icon">⏻</span> Power
+                </button>
+                <button class="btn" id="btnVolUp" title="Volume Up">
+                    <span class="btn-icon">+</span> Vol
+                </button>
+                <button class="btn" id="btnVolDown" title="Volume Down">
+                    <span class="btn-icon">-</span> Vol
+                </button>
+            </div>
+        </div>
+
+        <div class="side-bar">
+            <div class="panel-section">
+                <h3>Remote Text Input</h3>
+                <div class="input-group">
+                    <input type="text" id="textInput" class="input-field" placeholder="Type text to send..." />
+                    <button class="btn" id="btnSendText">Send</button>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>Device Specs</h3>
+                <div class="info-row">
+                    <span class="info-label">Device Name:</span>
+                    <span class="info-value" id="deviceName">Searching...</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Resolution:</span>
+                    <span class="info-value" id="deviceRes">720 x 1280</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Latency Mode:</span>
+                    <span class="info-value">Ultra-Low (~30ms)</span>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>Shortcuts</h3>
+                <p style="font-size: 0.8rem; color: var(--text-dim); line-height: 1.4;">
+                    • Click on Canvas = Touch Tap<br>
+                    • Mouse Drag = Swipe / Scroll<br>
+                    • Type text directly to smartphone keyboard
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('screenCanvas');
+        const ctx = canvas.getContext('2d');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const deviceName = document.getElementById('deviceName');
+        const deviceRes = document.getElementById('deviceRes');
+        const textInput = document.getElementById('textInput');
+        const btnSendText = document.getElementById('btnSendText');
+
+        let ws = null;
+        let isMouseDown = false;
+        let startX = 0;
+        let startY = 0;
+        let startTime = 0;
+
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/stream`;
+
+            ws = new WebSocket(wsUrl);
+            ws.binaryType = 'blob';
+
+            ws.onopen = () => {
+                connectionStatus.textContent = 'Connected (LIVE)';
+                fetchDeviceStatus();
+            };
+
+            ws.onmessage = async (event) => {
+                if (event.data instanceof Blob) {
+                    const blob = event.data;
+                    const img = new Image();
+                    const url = URL.createObjectURL(blob);
+                    img.onload = () => {
+                        canvas.width = img.naturalWidth || 720;
+                        canvas.height = img.naturalHeight || 1280;
+                        deviceRes.textContent = `${canvas.width} x ${canvas.height}`;
+                        ctx.drawImage(img, 0, 0);
+                        URL.revokeObjectURL(url);
+                    };
+                    img.src = url;
+                }
+            };
+
+            ws.onclose = () => {
+                connectionStatus.textContent = 'Disconnected (Reconnecting...)';
+                setTimeout(connectWebSocket, 2000);
+            };
+
+            ws.onerror = (err) => {
+                console.error('WebSocket Error:', err);
+            };
+        }
+
+        async function fetchDeviceStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+                if (data.devices && data.devices.length > 0) {
+                    deviceName.textContent = data.devices[0].model;
+                } else {
+                    deviceName.textContent = 'No Device Connected';
+                }
+            } catch (err) {
+                console.error('Failed to fetch status:', err);
+            }
+        }
+
+        function getCanvasCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: Math.round((e.clientX - rect.left) * scaleX),
+                y: Math.round((e.clientY - rect.top) * scaleY)
+            };
+        }
+
+        // Mouse Touch Events
+        canvas.addEventListener('mousedown', (e) => {
+            isMouseDown = true;
+            const coords = getCanvasCoordinates(e);
+            startX = coords.x;
+            startY = coords.y;
+            startTime = Date.now();
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (!isMouseDown) return;
+            isMouseDown = false;
+
+            const coords = getCanvasCoordinates(e);
+            const endX = coords.x;
+            const endY = coords.y;
+            const duration = Date.now() - startTime;
+
+            const dist = Math.hypot(endX - startX, endY - startY);
+
+            if (dist < 10) {
+                // Tap
+                sendAction({ type: 'tap', x: startX, y: startY });
+            } else {
+                // Swipe
+                sendAction({
+                    type: 'swipe',
+                    x1: startX,
+                    y1: startY,
+                    x2: endX,
+                    y2: endY,
+                    duration: duration
+                });
+            }
+        });
+
+        function sendAction(actionObj) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify(actionObj));
+            }
+        }
+
+        // Navigation Controls
+        document.getElementById('btnBack').addEventListener('click', () => sendAction({ type: 'keyevent', code: 4 }));
+        document.getElementById('btnHome').addEventListener('click', () => sendAction({ type: 'keyevent', code: 3 }));
+        document.getElementById('btnRecents').addEventListener('click', () => sendAction({ type: 'keyevent', code: 187 }));
+        document.getElementById('btnPower').addEventListener('click', () => sendAction({ type: 'keyevent', code: 26 }));
+        document.getElementById('btnVolUp').addEventListener('click', () => sendAction({ type: 'keyevent', code: 24 }));
+        document.getElementById('btnVolDown').addEventListener('click', () => sendAction({ type: 'keyevent', code: 25 }));
+
+        // Send Text
+        btnSendText.addEventListener('click', () => {
+            const val = textInput.value;
+            if (val) {
+                sendAction({ type: 'text', text: val });
+                textInput.value = '';
+            }
+        });
+
+        textInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                btnSendText.click();
+            }
+        });
+
+        // Initialize connection
+        connectWebSocket();
+        setInterval(fetchDeviceStatus, 5000);
+    </script>
+</body>
+</html>
