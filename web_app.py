@@ -12,8 +12,10 @@ import asyncio
 import subprocess
 import shutil
 from typing import Optional, List, Dict, Any
+import socket
+import qrcode
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.templating import Jinja2Templates
 import cv2
 import numpy as np
@@ -156,6 +158,36 @@ def generate_fallback_frame(device_count: int, quality_mode: str = "4k") -> byte
 async def read_root(request: Request):
     return templates.TemplateResponse(request=request, name="index.html")
 
+def get_server_lan_ip() -> str:
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(0.5)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"
+
+@app.get("/qr")
+async def get_qr_image():
+    """Generates PNG QR code containing the server's network URL for Phone B connection."""
+    lan_ip = get_server_lan_ip()
+    url = f"http://{lan_ip}:8080"
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=10,
+        border=2,
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    img_byte_arr = io.BytesIO()
+    img.save(img_byte_arr, format='PNG')
+    return Response(content=img_byte_arr.getvalue(), media_type="image/png")
+
 @app.get("/api/status")
 async def get_status():
     devices = adb_manager.get_devices()
@@ -215,14 +247,21 @@ async def websocket_stream(websocket: WebSocket):
 
     receiver_task = asyncio.create_task(receiver())
 
+    cached_devices = adb_manager.get_devices()
+    last_device_check = time.time()
+
     try:
         while True:
-            devices = adb_manager.get_devices()
-            selected_device = devices[0]["id"] if devices else None
+            now = time.time()
+            if now - last_device_check > 2.0:
+                cached_devices = await asyncio.to_thread(adb_manager.get_devices)
+                last_device_check = now
+
+            selected_device = cached_devices[0]["id"] if cached_devices else None
 
             frame_bytes = None
             if selected_device:
-                raw_bytes = adb_manager.capture_frame_bytes(selected_device)
+                raw_bytes = await asyncio.to_thread(adb_manager.capture_frame_bytes, selected_device)
                 if raw_bytes:
                     try:
                         nparr = np.frombuffer(raw_bytes, np.uint8)
@@ -236,7 +275,8 @@ async def websocket_stream(websocket: WebSocket):
                         print(f"[Frame Decode Exception] {exc}")
 
             if not frame_bytes:
-                frame_bytes = generate_fallback_frame(len(devices), client_config["mode"])
+                device_cnt = len(cached_devices) if cached_devices else 0
+                frame_bytes = generate_fallback_frame(device_cnt, client_config["mode"])
 
             await websocket.send_bytes(frame_bytes)
 
