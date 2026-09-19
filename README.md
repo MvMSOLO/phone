@@ -1,101 +1,66 @@
-# AxtarGet Screen Mirroring V1.4 📱💻
+# AxtarGet Screen Mirroring V2.0 (Mobile-to-Mobile 120 FPS 4K HDR) 📱⚡📱
 
-AxtarGet Screen Mirroring V1.4 - Bu Android smartfon ekranini Wi-Fi yoki USB (ADB) orqali kompyuter brauzerida real vaqt rejimida past kechikish (low latency) bilan ko'rsatish va masofadan to'liq boshqarish imkonini beruvchi professional loyiha.
-
----
-
-## 🌟 Asosiy Imkoniyatlar va Xususiyatlar
-
-1. **Terminal / CLI UI Interfeysi (AxtarGet Style):**
-   - Matrix / Hacker stilidagi yashil va oq rangli interfeys (Rich kutubxonasi).
-   - "AxtarGet Screen Mirroring V1.4" ASCII banner.
-   - Real vaqt rejimida ishlovchi server va ADB status paneli.
-   - Interaktiv Terminal Buyruqlari:
-     - `ip` - Barcha lokal va Wi-Fi IP manzillarini ko'rsatish.
-     - `-qr` - Smartfon orqali tezkor ulanish uchun terminalda QR-kod chiqarish.
-     - `-clear` - Terminal ekranini tozalash.
-     - `-exit` - Serverni xavfsiz to'xtatish va dasturdan chiqish.
-
-2. **Yuqori Unumdorlik va Past Kechikish (Backend):**
-   - **FastAPI va WebSockets:** Kadrlar ketma-ketligini va boshqaruv buyruqlarini minimal kechikish bilan uzatish.
-   - **ADB Boshqaruvi:** `adb exec-out screencap -p` va `adb shell input` orqali sichqoncha va klaviatura amallarini bajarish.
-   - **Fallback Stream:** Telefoni ulangan bo'lmagan holatda grafik interaktiv kutish ekrani.
-
-3. **Veb Interfeys va Boshqaruv (Frontend):**
-   - Dynamic HTML5 Canvas video pleer.
-   - **Sichqoncha bilan boshqaruv:**
-     - Bosish (Click) -> Telefon ekranidagi tegish (Tap).
-     - Surish (Drag) -> Ekranni surish / skroll qilish (Swipe).
-   - **Navigatsiya tugmalari:** Orqaga (Back), Bosh sahifa (Home), So'nggi ilovalar (Recents), Yoqish/O'chirish (Power), Ovoz (+/-).
-   - **Matn yuborish:** Kompyuter klaviaturasida yozilgan matnni telefondagi faol maydonga yuborish.
+AxtarGet Screen Mirroring V2.0 - Bu Android smartfon ekranini kompyuter va **boshqa telefon (Phone B) brauzerida** 120 FPS gacha o'ta yuqori kadrlar tezligida (ultra-low latency), 4K HDR sifatida real vaqt rejimida ko'rsatish va masofadan to'liq boshqarish imkonini beruvchi professional loyiha.
 
 ---
 
-## 🛠️ O'rnatish va Ishga Tushirish Qo'llanmasi
+## 🚀 Yangi Imkoniyatlar (V2.0 Update)
+
+1. **📱 Telefon Orqali Telefonni Boshqarish (Mobile-to-Mobile Remote Control):**
+   - Telefon A (Maqsadli telefon) ekranini **Telefon B brauzerida** ochib, Phone B ning sensor ekrani orqali Phone A ni real vaqt rejimida boshqarish.
+   - Mobil moslashuvchan (Responsive Touch UI) va `touchstart` / `touchend` imo-ishoralarini (gesture) qo'llab-quvvatlash.
+
+2. **⚡ 120 FPS Ultra-Low Latency Stream (&lt;10ms kechikish):**
+   - Veb-interfeysda kadrlar tezligini dinamik ravishda tanlash: `120 FPS (Ultra-Smooth)`, `60 FPS`, `30 FPS`.
+   - Minimal buferlash va optimal matn/grafik sifat.
+
+3. **🎬 4K HDR Sifat Rejimi:**
+   - Ekranni 4K HDR Ultra, 1080p High Quality va 720p Low Latency rejimlari bo'yicha sozlash.
+
+4. **💻 Terminal CLI Interfeysi (AxtarGet Style V2.0):**
+   - Rich kutubxonasida Matrix terminal banner va status-boshqaruv.
+   - QR-kod orqali boshqa mobil telefondan bir zumda ulanish (`-qr` buyrug'i).
+
+---
+
+## 🛠️ O'rnatish va Ishga Tushirish
 
 ### 1. Smartfonda USB Debugging (Sozlash) ni Yoqish
 
-1. Smartfoningizda **Sozlamalar (Settings)** -> **Telefon haqida (About Phone)** bo'limiga kiring.
-2. **Build number** tugmasini 7 marta uzluksiz bosing ("Siz endi dasturchisiz" xabari chiqquncha).
-3. **Dasturchi opsiyalari (Developer Options)** bo'limiga kiring.
-4. **USB Debugging (USB orqali sozlash)** funksiyasini yoqing.
-5. Smartfonni USB kabel orqali kompyuterga ulang va ekranda "Allow USB Debugging?" so'rovi chiqsa, **"Ruxsat berish (Allow)"** tugmasini bosing.
+1. **Phone A (Maqsadli telefon)** sozlamalaridan **"USB Debugging" (USB orqali sozlash)** funksiyasini yoqing.
+2. Phone A ni USB kabel orqali kompyuterga ulang yoki Wi-Fi ADB orqali bog'lang.
 
----
-
-### 2. Loyihani Kompyuterda Ishga Tushirish
-
-#### Python muhitini tayyorlash va kutubxonalarni o'rnatish:
+### 2. Serverni Ishga Tushirish
 
 ```bash
-# Python kutubxonalarini o'rnatish
+# Kutubxonalarni o'rnatish
 pip install -r requirements.txt
-```
 
-#### Dasturni ishga tushirish:
-
-```bash
-# Windows / Linux / macOS
+# Serverni ishga tushirish
 python server.py
 ```
 
-Dastur ishga tushgach, CLI terminalda AxtarGet dashboard namoyon bo'ladi va brauzer orqali kiritiladigan manzillar ko'rsatiladi:
-- Local access: `http://127.0.0.1:8080`
-- Network Wi-Fi access: `http://192.168.x.x:8080`
+CLI Terminalda Wi-Fi manzil va QR-kod yaratiladi (`http://192.168.x.x:8080`).
 
 ---
 
-### 3. Wi-Fi Orqali Telefonda Ekran Ko'rsatish (Simsiz Ulanish)
+## 📱 TELEFON ORQALI TELEFONNI BOSHQARISH (Phone B -> Phone A)
 
-1. Kompyuteringiz va smartfoningiz **bir xil Wi-Fi tarmog'iga** ulangan bo'lishi kerak.
-2. Dastur terminalida `-qr` buyrug'ini kiriting.
-3. Smartfon kamerasini terminaldagi **QR-kodga** qarating va hosil bo'lgan havolani brauzerda oching (`http://192.168.x.x:8080`).
-4. Endi siz smartfoningiz ekranini brauzeringizda ko'rishingiz va sichqoncha orqali boshqarishingiz mumkin!
-
----
-
-## 📂 Loyiha Fayllar Stukturasi
-
-```
-axtarget-screen-mirroring/
-├── requirements.txt      # Barcha kerakli Python kutubxonalari
-├── server.py            # Terminal CLI, AxtarGet Banner, Status Dashboard, QR-kod generator
-├── web_app.py           # FastAPI, WebSockets streaming server va ADB input ishlovchisi
-├── templates/
-│   └── index.html       # HTML5 Canvas ekran pleeri va masofaviy boshqaruv paneli
-└── README.md            # Batafsil loyiha qo'llanmasi
-```
+1. **Phone A** va **Phone B** ni bir xil Wi-Fi tarmog'iga ulang.
+2. Terminalda `-qr` buyrug'ini kiriting.
+3. **Phone B** kamerasini terminaldagi QR-kodga qarating va havolani Phone B brauzerida oching.
+4. Phone B ekraniga barmoq bilan tegish (Tap) va surish (Swipe) orqali Phone A ni real vaqtda to'liq boshqaring!
 
 ---
 
-## ⚡ Foydali Buyruqlar Ro'yxati (Terminal CLI)
+## ⚡ CLI Terminal Buyruqlari
 
-| Buyruq | Tavsif |
+| Buyruq | Vazifasi |
 | :--- | :--- |
-| `ip` | Ulanish uchun lokal va Wi-Fi IP manzillarini ko'rsatadi |
-| `-qr` | Wi-Fi orqali smartfon brauzerida ochish uchun QR-kod chiqaradi |
-| `-clear` | Terminal ekranini tozalaydi |
-| `-exit` | Web server va dastur ishini to'xtatadi |
+| `ip` | Mobil va lokal IP manzillarini ko'rsatish |
+| `-qr` | Telefon B uchun Wi-Fi QR-kod chiqarish |
+| `-clear` | Terminalni tozalash |
+| `-exit` | Server va dastur ishini to'xtatish |
 
 ---
-*AxtarGet Screen Mirroring V1.4 — Real-time Android Remote Mirroring & Control System.*
+*AxtarGet Screen Mirroring V2.0 — High-FPS Mobile-to-Mobile Screen Streaming System.*

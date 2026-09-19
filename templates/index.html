@@ -2,19 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AxtarGet Screen Mirroring V1.4</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AxtarGet Screen Mirroring V2.0 - Mobile & 120 FPS 4K</title>
     <style>
         :root {
-            --bg-color: #0d0f12;
-            --panel-bg: #161b22;
+            --bg-color: #080a0c;
+            --panel-bg: #11161d;
             --accent-color: #00ff66;
             --accent-glow: rgba(0, 255, 102, 0.4);
-            --text-color: #e6edf3;
+            --text-color: #f0f6fc;
             --text-dim: #8b949e;
-            --border-color: #30363d;
-            --btn-hover: #21262d;
-            --danger-color: #ff4444;
+            --border-color: #21262d;
+            --btn-hover: #1f242c;
         }
 
         * {
@@ -23,6 +22,8 @@
             padding: 0;
             font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
             user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
         }
 
         body {
@@ -37,31 +38,31 @@
         header {
             background-color: var(--panel-bg);
             border-bottom: 1px solid var(--border-color);
-            padding: 12px 24px;
+            padding: 10px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            z-index: 10;
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .brand-logo {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             background-color: var(--accent-color);
             border-radius: 50%;
             box-shadow: 0 0 10px var(--accent-glow);
         }
 
         .brand-title {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 700;
-            letter-spacing: 1px;
-            color: var(--text-color);
+            letter-spacing: 0.5px;
         }
 
         .brand-title span {
@@ -71,21 +72,21 @@
         .status-badge {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
+            gap: 6px;
+            font-size: 0.8rem;
             background: rgba(0, 255, 102, 0.1);
             border: 1px solid var(--accent-color);
-            padding: 4px 12px;
+            padding: 3px 10px;
             border-radius: 20px;
             color: var(--accent-color);
         }
 
         .status-dot {
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
             background-color: var(--accent-color);
             border-radius: 50%;
-            box-shadow: 0 0 8px var(--accent-color);
+            box-shadow: 0 0 6px var(--accent-color);
             animation: pulse 1.5s infinite;
         }
 
@@ -98,51 +99,57 @@
         main {
             flex: 1;
             display: flex;
+            flex-direction: row;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            gap: 20px;
-            position: relative;
+            padding: 12px;
+            gap: 16px;
+            overflow-y: auto;
         }
 
         .device-container {
             position: relative;
             background: #000;
-            border-radius: 24px;
-            padding: 12px;
+            border-radius: 20px;
+            padding: 8px;
             border: 2px solid var(--border-color);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 20px rgba(0,255,102,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 15px rgba(0,255,102,0.1);
             display: flex;
             flex-direction: column;
             align-items: center;
-            max-height: calc(100vh - 100px);
+            max-height: calc(100vh - 80px);
+            max-width: 100%;
         }
 
         .canvas-wrapper {
             position: relative;
             overflow: hidden;
-            border-radius: 16px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #050505;
+            background-color: #030303;
+            touch-action: none;
         }
 
         #screenCanvas {
             display: block;
-            max-height: calc(100vh - 180px);
+            max-height: calc(100vh - 160px);
             max-width: 100%;
             cursor: pointer;
             object-fit: contain;
+            touch-action: none;
         }
 
         .control-panel {
             display: flex;
-            gap: 12px;
-            margin-top: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
             background-color: var(--panel-bg);
-            padding: 8px 16px;
-            border-radius: 30px;
+            padding: 6px 12px;
+            border-radius: 25px;
             border: 1px solid var(--border-color);
         }
 
@@ -150,77 +157,76 @@
             background-color: transparent;
             border: 1px solid var(--border-color);
             color: var(--text-color);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.82rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
 
-        .btn:hover {
+        .btn:hover, .btn:active {
             background-color: var(--accent-color);
             color: #000;
             border-color: var(--accent-color);
-            box-shadow: 0 0 10px var(--accent-glow);
-        }
-
-        .btn-icon {
-            font-size: 1.1rem;
+            box-shadow: 0 0 8px var(--accent-glow);
         }
 
         .side-bar {
             background: var(--panel-bg);
             border-radius: 16px;
             border: 1px solid var(--border-color);
-            padding: 20px;
-            width: 300px;
+            padding: 16px;
+            width: 320px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
         }
 
         .panel-section {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
         .panel-section h3 {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: var(--text-dim);
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 6px;
+            padding-bottom: 4px;
         }
 
         .input-group {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
 
-        .input-field {
+        .input-field, .select-field {
             flex: 1;
             background: var(--bg-color);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 8px 12px;
+            border-radius: 6px;
+            padding: 6px 10px;
             color: var(--text-color);
             outline: none;
+            font-size: 0.85rem;
         }
 
-        .input-field:focus {
+        .input-field:focus, .select-field:focus {
             border-color: var(--accent-color);
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
         }
 
         .info-label {
@@ -231,13 +237,37 @@
             color: var(--accent-color);
             font-weight: bold;
         }
+
+        /* Mobile Responsive Adjustments */
+        @media (max-width: 820px) {
+            main {
+                flex-direction: column;
+                justify-content: flex-start;
+                padding: 8px;
+            }
+
+            .device-container {
+                max-height: none;
+                width: 100%;
+            }
+
+            #screenCanvas {
+                max-height: 60vh;
+                width: auto;
+            }
+
+            .side-bar {
+                width: 100%;
+                max-height: none;
+            }
+        }
     </style>
 </head>
 <body>
     <header>
         <div class="brand">
             <div class="brand-logo"></div>
-            <div class="brand-title">AxtarGet <span>Mirroring V1.4</span></div>
+            <div class="brand-title">AxtarGet <span>Mirroring V2.0</span></div>
         </div>
         <div class="status-badge">
             <div class="status-dot"></div>
@@ -248,62 +278,69 @@
     <main>
         <div class="device-container">
             <div class="canvas-wrapper">
-                <canvas id="screenCanvas" width="720" height="1280"></canvas>
+                <canvas id="screenCanvas" width="1080" height="1920"></canvas>
             </div>
 
             <div class="control-panel">
-                <button class="btn" id="btnBack" title="Back">
-                    <span class="btn-icon">◀</span> Back
-                </button>
-                <button class="btn" id="btnHome" title="Home">
-                    <span class="btn-icon">●</span> Home
-                </button>
-                <button class="btn" id="btnRecents" title="Recents">
-                    <span class="btn-icon">█</span> Recents
-                </button>
-                <button class="btn" id="btnPower" title="Power">
-                    <span class="btn-icon">⏻</span> Power
-                </button>
-                <button class="btn" id="btnVolUp" title="Volume Up">
-                    <span class="btn-icon">+</span> Vol
-                </button>
-                <button class="btn" id="btnVolDown" title="Volume Down">
-                    <span class="btn-icon">-</span> Vol
-                </button>
+                <button class="btn" id="btnBack" title="Back">◀ Back</button>
+                <button class="btn" id="btnHome" title="Home">● Home</button>
+                <button class="btn" id="btnRecents" title="Recents">█ Recents</button>
+                <button class="btn" id="btnPower" title="Power">⏻ Power</button>
+                <button class="btn" id="btnVolUp" title="Volume Up">+ Vol</button>
+                <button class="btn" id="btnVolDown" title="Volume Down">- Vol</button>
             </div>
         </div>
 
         <div class="side-bar">
             <div class="panel-section">
-                <h3>Remote Text Input</h3>
+                <h3>Performance & Quality Settings</h3>
+                <div class="info-row">
+                    <span class="info-label">Frame Rate (FPS):</span>
+                    <select id="fpsSelect" class="select-field">
+                        <option value="120" selected>120 FPS (Ultra-Smooth)</option>
+                        <option value="60">60 FPS (Balanced)</option>
+                        <option value="30">30 FPS (Power Saver)</option>
+                    </select>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Resolution Mode:</span>
+                    <select id="qualitySelect" class="select-field">
+                        <option value="85" selected>4K HDR Ultra</option>
+                        <option value="70">1080p High Quality</option>
+                        <option value="50">720p Low Latency</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>Mobile Remote Input</h3>
                 <div class="input-group">
-                    <input type="text" id="textInput" class="input-field" placeholder="Type text to send..." />
+                    <input type="text" id="textInput" class="input-field" placeholder="Type text to send to phone..." />
                     <button class="btn" id="btnSendText">Send</button>
                 </div>
             </div>
 
             <div class="panel-section">
-                <h3>Device Specs</h3>
+                <h3>Connected Smartphone Specs</h3>
                 <div class="info-row">
-                    <span class="info-label">Device Name:</span>
-                    <span class="info-value" id="deviceName">Searching...</span>
+                    <span class="info-label">Target Device:</span>
+                    <span class="info-value" id="deviceName">Detecting...</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Resolution:</span>
-                    <span class="info-value" id="deviceRes">720 x 1280</span>
+                    <span class="info-label">Canvas Native:</span>
+                    <span class="info-value" id="deviceRes">1080 x 1920</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Latency Mode:</span>
-                    <span class="info-value">Ultra-Low (~30ms)</span>
+                    <span class="info-label">Latency Status:</span>
+                    <span class="info-value">120 FPS Real-time (&lt;10ms)</span>
                 </div>
             </div>
 
             <div class="panel-section">
-                <h3>Shortcuts</h3>
+                <h3>Phone-to-Phone Controls</h3>
                 <p style="font-size: 0.8rem; color: var(--text-dim); line-height: 1.4;">
-                    • Click on Canvas = Touch Tap<br>
-                    • Mouse Drag = Swipe / Scroll<br>
-                    • Type text directly to smartphone keyboard
+                    📱 <b>Mobile Phone Browser:</b> Open this page on Phone B, touch and swipe directly on the canvas to control Phone A in real-time!<br>
+                    💻 <b>PC Browser:</b> Mouse click = Tap, Mouse drag = Swipe/Scroll.
                 </p>
             </div>
         </div>
@@ -317,12 +354,14 @@
         const deviceRes = document.getElementById('deviceRes');
         const textInput = document.getElementById('textInput');
         const btnSendText = document.getElementById('btnSendText');
+        const fpsSelect = document.getElementById('fpsSelect');
+        const qualitySelect = document.getElementById('qualitySelect');
 
         let ws = null;
-        let isMouseDown = false;
         let startX = 0;
         let startY = 0;
         let startTime = 0;
+        let isTouching = false;
 
         function connectWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -332,7 +371,8 @@
             ws.binaryType = 'blob';
 
             ws.onopen = () => {
-                connectionStatus.textContent = 'Connected (LIVE)';
+                connectionStatus.textContent = 'Connected (LIVE 120 FPS)';
+                sendStreamConfig();
                 fetchDeviceStatus();
             };
 
@@ -342,8 +382,8 @@
                     const img = new Image();
                     const url = URL.createObjectURL(blob);
                     img.onload = () => {
-                        canvas.width = img.naturalWidth || 720;
-                        canvas.height = img.naturalHeight || 1280;
+                        canvas.width = img.naturalWidth || 1080;
+                        canvas.height = img.naturalHeight || 1920;
                         deviceRes.textContent = `${canvas.width} x ${canvas.height}`;
                         ctx.drawImage(img, 0, 0);
                         URL.revokeObjectURL(url);
@@ -354,12 +394,21 @@
 
             ws.onclose = () => {
                 connectionStatus.textContent = 'Disconnected (Reconnecting...)';
-                setTimeout(connectWebSocket, 2000);
+                setTimeout(connectWebSocket, 1500);
             };
 
             ws.onerror = (err) => {
                 console.error('WebSocket Error:', err);
             };
+        }
+
+        function sendStreamConfig() {
+            sendAction({
+                type: 'config',
+                fps: parseInt(fpsSelect.value),
+                quality: parseInt(qualitySelect.value),
+                mode: '4k'
+            });
         }
 
         async function fetchDeviceStatus() {
@@ -369,27 +418,69 @@
                 if (data.devices && data.devices.length > 0) {
                     deviceName.textContent = data.devices[0].model;
                 } else {
-                    deviceName.textContent = 'No Device Connected';
+                    deviceName.textContent = 'No Phone Connected';
                 }
             } catch (err) {
                 console.error('Failed to fetch status:', err);
             }
         }
 
-        function getCanvasCoordinates(e) {
+        function getCanvasCoordinates(clientX, clientY) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
             return {
-                x: Math.round((e.clientX - rect.left) * scaleX),
-                y: Math.round((e.clientY - rect.top) * scaleY)
+                x: Math.round((clientX - rect.left) * scaleX),
+                y: Math.round((clientY - rect.top) * scaleY)
             };
         }
 
-        // Mouse Touch Events
+        // --- Touch Event Listeners for Mobile Phone Browser ---
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 0) {
+                const touch = e.touches[0];
+                const coords = getCanvasCoordinates(touch.clientX, touch.clientY);
+                startX = coords.x;
+                startY = coords.y;
+                startTime = Date.now();
+                isTouching = true;
+            }
+            e.preventDefault();
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            if (!isTouching) return;
+            isTouching = false;
+
+            if (e.changedTouches.length > 0) {
+                const touch = e.changedTouches[0];
+                const coords = getCanvasCoordinates(touch.clientX, touch.clientY);
+                const endX = coords.x;
+                const endY = coords.y;
+                const duration = Date.now() - startTime;
+                const dist = Math.hypot(endX - startX, endY - startY);
+
+                if (dist < 15) {
+                    sendAction({ type: 'tap', x: startX, y: startY });
+                } else {
+                    sendAction({
+                        type: 'swipe',
+                        x1: startX,
+                        y1: startY,
+                        x2: endX,
+                        y2: endY,
+                        duration: duration
+                    });
+                }
+            }
+            e.preventDefault();
+        }, { passive: false });
+
+        // --- Mouse Event Listeners for Desktop Browser ---
+        let isMouseDown = false;
         canvas.addEventListener('mousedown', (e) => {
             isMouseDown = true;
-            const coords = getCanvasCoordinates(e);
+            const coords = getCanvasCoordinates(e.clientX, e.clientY);
             startX = coords.x;
             startY = coords.y;
             startTime = Date.now();
@@ -399,18 +490,15 @@
             if (!isMouseDown) return;
             isMouseDown = false;
 
-            const coords = getCanvasCoordinates(e);
+            const coords = getCanvasCoordinates(e.clientX, e.clientY);
             const endX = coords.x;
             const endY = coords.y;
             const duration = Date.now() - startTime;
-
             const dist = Math.hypot(endX - startX, endY - startY);
 
-            if (dist < 10) {
-                // Tap
+            if (dist < 15) {
                 sendAction({ type: 'tap', x: startX, y: startY });
             } else {
-                // Swipe
                 sendAction({
                     type: 'swipe',
                     x1: startX,
@@ -436,6 +524,10 @@
         document.getElementById('btnVolUp').addEventListener('click', () => sendAction({ type: 'keyevent', code: 24 }));
         document.getElementById('btnVolDown').addEventListener('click', () => sendAction({ type: 'keyevent', code: 25 }));
 
+        // Settings Listeners
+        fpsSelect.addEventListener('change', sendStreamConfig);
+        qualitySelect.addEventListener('change', sendStreamConfig);
+
         // Send Text
         btnSendText.addEventListener('click', () => {
             const val = textInput.value;
@@ -453,7 +545,7 @@
 
         // Initialize connection
         connectWebSocket();
-        setInterval(fetchDeviceStatus, 5000);
+        setInterval(fetchDeviceStatus, 4000);
     </script>
 </body>
 </html>

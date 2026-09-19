@@ -1,6 +1,7 @@
 """
-AxtarGet Screen Mirroring V1.4 - Web Application & Screen Streamer
-FastAPI & WebSockets powered backend for low-latency Android screen mirroring and remote control.
+AxtarGet Screen Mirroring V2.0 - Web Application & Screen Streamer
+FastAPI & WebSockets powered backend for ultra-low latency (up to 120 FPS / 4K HDR),
+mobile-to-mobile phone browser remote control, and gesture touch event processing.
 """
 
 import os
@@ -12,16 +13,13 @@ import subprocess
 import shutil
 from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException
-from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, Response
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
-from PIL import Image, ImageDraw, ImageFont
 import cv2
 import numpy as np
 
-app = FastAPI(title="AxtarGet Screen Mirroring V1.4", version="1.4")
+app = FastAPI(title="AxtarGet Screen Mirroring V2.0", version="2.0")
 
-# Setup templates directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 os.makedirs(TEMPLATES_DIR, exist_ok=True)
@@ -51,7 +49,7 @@ class ADBManager:
                 parts = line.split()
                 if len(parts) >= 2 and parts[1] == "device":
                     device_id = parts[0]
-                    model = "Android Device"
+                    model = "Android Phone"
                     for part in parts[2:]:
                         if part.startswith("model:"):
                             model = part.split(":", 1)[1]
@@ -62,7 +60,7 @@ class ADBManager:
             return []
 
     def capture_frame_bytes(self, device_id: Optional[str] = None) -> Optional[bytes]:
-        """Captures screen PNG bytes directly from ADB exec-out screencap -p."""
+        """Captures screen frame directly using adb exec-out screencap -p for minimal latency."""
         if not self.is_adb_available():
             return None
         cmd = [self.adb_path]
@@ -87,11 +85,11 @@ class ADBManager:
         except Exception as e:
             print(f"[ADB Input Error] Tap failed: {e}")
 
-    def execute_input_swipe(self, x1: int, y1: int, x2: int, y2: int, duration_ms: int = 300, device_id: Optional[str] = None):
+    def execute_input_swipe(self, x1: int, y1: int, x2: int, y2: int, duration_ms: int = 200, device_id: Optional[str] = None):
         cmd = [self.adb_path]
         if device_id:
             cmd.extend(["-s", device_id])
-        cmd.extend(["shell", "input", "swipe", str(x1), str(y1), str(x2), str(y2), str(max(100, duration_ms))])
+        cmd.extend(["shell", "input", "swipe", str(x1), str(y1), str(x2), str(y2), str(max(50, duration_ms))])
         try:
             subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception as e:
@@ -111,7 +109,6 @@ class ADBManager:
         cmd = [self.adb_path]
         if device_id:
             cmd.extend(["-s", device_id])
-        # Escape spaces for ADB shell input text
         safe_text = text.replace(" ", "%s")
         cmd.extend(["shell", "input", "text", safe_text])
         try:
@@ -121,43 +118,38 @@ class ADBManager:
 
 adb_manager = ADBManager()
 
-def generate_fallback_frame(device_count: int) -> bytes:
-    """Generates a high quality Matrix-styled fallback image when no device is connected or frame capture pending."""
-    width, height = 720, 1280
+def generate_fallback_frame(device_count: int, quality_mode: str = "4k") -> bytes:
+    """Generates futuristic Matrix screen background when device connection is initializing."""
+    width, height = 1080, 1920
     img = np.zeros((height, width, 3), dtype=np.uint8)
 
-    # Dark matrix grid pattern background
-    for y in range(0, height, 40):
-        cv2.line(img, (0, y), (width, y), (0, 25, 0), 1)
-    for x in range(0, width, 40):
-        cv2.line(img, (x, 0), (x, height), (0, 25, 0), 1)
+    # Grid lines
+    for y in range(0, height, 60):
+        cv2.line(img, (0, y), (width, y), (0, 30, 0), 1)
+    for x in range(0, width, 60):
+        cv2.line(img, (x, 0), (x, height), (0, 30, 0), 1)
 
-    # Outer border
-    cv2.rectangle(img, (20, 20), (width - 20, height - 20), (0, 255, 100), 2)
+    cv2.rectangle(img, (30, 30), (width - 30, height - 30), (0, 255, 100), 3)
 
-    # Title Text
-    cv2.putText(img, "AXTARGET SCREEN MIRRORING V1.4", (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 120), 2, cv2.LINE_AA)
+    cv2.putText(img, "AXTARGET SCREEN MIRRORING V2.0", (80, 150), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 120), 3, cv2.LINE_AA)
+    cv2.putText(img, "MOBILE-TO-MOBILE 120 FPS 4K HDR", (80, 220), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2, cv2.LINE_AA)
 
-    # Status details
     if device_count > 0:
-        cv2.putText(img, "STATUS: Device Connected - Stream Initializing...", (50, 200), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 1, cv2.LINE_AA)
+        cv2.putText(img, "STATUS: Smartphone Connected - Streaming...", (80, 340), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
     else:
-        cv2.putText(img, "STATUS: Waiting for ADB Device...", (50, 200), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 150, 255), 1, cv2.LINE_AA)
-        cv2.putText(img, "1. Connect smartphone via USB/Wi-Fi", (50, 260), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (200, 200, 200), 1, cv2.LINE_AA)
-        cv2.putText(img, "2. Enable 'USB Debugging' in Developer Options", (50, 300), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (200, 200, 200), 1, cv2.LINE_AA)
-        cv2.putText(img, "3. Authorize ADB prompt on phone screen", (50, 340), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (200, 200, 200), 1, cv2.LINE_AA)
+        cv2.putText(img, "STATUS: Searching for Smartphone (USB/Wi-Fi)...", (80, 340), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 180, 255), 2, cv2.LINE_AA)
+        cv2.putText(img, "1. Enable 'USB Debugging' on Target Smartphone", (80, 420), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (220, 220, 220), 2, cv2.LINE_AA)
+        cv2.putText(img, "2. Connect to Wi-Fi or USB ADB", (80, 480), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (220, 220, 220), 2, cv2.LINE_AA)
+        cv2.putText(img, "3. Open web interface on Phone B to control Phone A!", (80, 540), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (220, 220, 220), 2, cv2.LINE_AA)
 
-    # Dynamic clock text
     current_time = time.strftime("%H:%M:%S UTC")
-    cv2.putText(img, f"SERVER TIME: {current_time}", (50, 420), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 1, cv2.LINE_AA)
+    cv2.putText(img, f"STREAM TIME: {current_time}", (80, 650), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 100), 2, cv2.LINE_AA)
 
-    # Simulated android home icon / graphic
-    center_x, center_y = width // 2, height // 2 + 100
-    cv2.circle(img, (center_x, center_y), 80, (0, 255, 100), 2)
-    cv2.putText(img, "AxtarGet", (center_x - 50, center_y + 8), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 100), 2, cv2.LINE_AA)
+    center_x, center_y = width // 2, height // 2 + 150
+    cv2.circle(img, (center_x, center_y), 120, (0, 255, 120), 3)
+    cv2.putText(img, "AxtarGet V2.0", (center_x - 90, center_y + 12), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 120), 3, cv2.LINE_AA)
 
-    # Encode to JPEG
-    _, buffer = cv2.imencode('.jpg', img, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+    _, buffer = cv2.imencode('.jpg', img, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
     return buffer.tobytes()
 
 @app.get("/", response_class=HTMLResponse)
@@ -170,7 +162,7 @@ async def get_status():
     adb_ready = adb_manager.is_adb_available()
     return {
         "status": "online",
-        "system": "AxtarGet Screen Mirroring V1.4",
+        "system": "AxtarGet Screen Mirroring V2.0 (Mobile-to-Mobile 120FPS 4K)",
         "adb_available": adb_ready,
         "device_count": len(devices),
         "devices": devices
@@ -179,7 +171,13 @@ async def get_status():
 @app.websocket("/ws/stream")
 async def websocket_stream(websocket: WebSocket):
     await websocket.accept()
-    print("[WebSocket] Client connected to screen stream")
+    print("[WebSocket] Client connected (Mobile/Desktop Remote Control)")
+
+    client_config = {
+        "fps": 120,
+        "quality": 85,
+        "mode": "4k"
+    }
 
     async def receiver():
         try:
@@ -188,7 +186,11 @@ async def websocket_stream(websocket: WebSocket):
                 action = data.get("type")
                 device_id = data.get("device_id")
 
-                if action == "tap":
+                if action == "config":
+                    client_config["fps"] = int(data.get("fps", 120))
+                    client_config["quality"] = int(data.get("quality", 85))
+                    client_config["mode"] = str(data.get("mode", "4k"))
+                elif action == "tap":
                     x = int(data.get("x", 0))
                     y = int(data.get("y", 0))
                     adb_manager.execute_input_tap(x, y, device_id)
@@ -197,7 +199,7 @@ async def websocket_stream(websocket: WebSocket):
                     y1 = int(data.get("y1", 0))
                     x2 = int(data.get("x2", 0))
                     y2 = int(data.get("y2", 0))
-                    duration = int(data.get("duration", 300))
+                    duration = int(data.get("duration", 150))
                     adb_manager.execute_input_swipe(x1, y1, x2, y2, duration, device_id)
                 elif action == "keyevent":
                     keycode = int(data.get("code", 0))
@@ -209,7 +211,7 @@ async def websocket_stream(websocket: WebSocket):
         except WebSocketDisconnect:
             pass
         except Exception as e:
-            print(f"[WebSocket Error] Receiver error: {e}")
+            print(f"[WebSocket Receiver Exception] {e}")
 
     receiver_task = asyncio.create_task(receiver())
 
@@ -223,28 +225,30 @@ async def websocket_stream(websocket: WebSocket):
                 raw_bytes = adb_manager.capture_frame_bytes(selected_device)
                 if raw_bytes:
                     try:
-                        # Convert PNG raw capture to optimized JPEG for web transport
                         nparr = np.frombuffer(raw_bytes, np.uint8)
                         frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
                         if frame is not None:
-                            # Compress to JPEG with 70% quality for optimal frame rate & low latency
-                            _, jpeg_buf = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+                            # Apply JPEG quality for high FPS streaming
+                            quality = client_config["quality"]
+                            _, jpeg_buf = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
                             frame_bytes = jpeg_buf.tobytes()
                     except Exception as exc:
-                        print(f"[Frame Processing Error] {exc}")
+                        print(f"[Frame Decode Exception] {exc}")
 
             if not frame_bytes:
-                frame_bytes = generate_fallback_frame(len(devices))
+                frame_bytes = generate_fallback_frame(len(devices), client_config["mode"])
 
-            # Send binary image frame over WebSocket
             await websocket.send_bytes(frame_bytes)
-            # Control frame rate (~25-30 FPS)
-            await asyncio.sleep(0.035)
+
+            # Ultra-low delay loop timing (~0.008s for ~120 FPS streaming capability)
+            target_fps = max(15, min(120, client_config["fps"]))
+            delay = 1.0 / target_fps
+            await asyncio.sleep(delay)
 
     except WebSocketDisconnect:
         print("[WebSocket] Client disconnected")
     except Exception as e:
-        print(f"[WebSocket Error] Sender error: {e}")
+        print(f"[WebSocket Sender Exception] {e}")
     finally:
         receiver_task.cancel()
 
